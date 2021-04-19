@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Specify the refresh internal in seconds. -->
+<Configuration status="INFO" monitorInterval="30">
+    <Properties>
+        <!-- 应用需要修改为合适的log路径 -->
+        <Property name="baseLogDir">logs/private-file-system</Property>
+        <Property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level[%t] %c{1.}.%M(%L): %msg%n</Property>
+    </Properties>
+    <!-- 先定义所有的appender -->
+    <Appenders>
+        <!-- 输出控制台的配置 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout>
+                <Pattern>${pattern}</Pattern>
+            </PatternLayout>
+        </Console>
+        <!-- 系统日志，可以作为root logger的appender，供打印一些中间件的日志 -->
+        <RollingRandomAccessFile name="SYS_APPENDER" fileName="${baseLogDir}/root.log"
+                                 filePattern="${baseLogDir}/$${date:yyyy-MM}/root-%d{yyyy-MM-dd}.%i.gz">
+            <PatternLayout>
+                <Pattern>${pattern}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <Filters>
+                <!-- root.log记录的日志级别 -->
+                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <!-- 最多产生30个日志文件 -->
+            <DefaultRolloverStrategy max="30">
+                <!-- 对于指定的路径下的指定后缀的文件，只保留30天的日志文件 -->
+                <Delete basePath="${baseLogDir}" maxDepth="1">
+                    <IfFileName glob="*.gz"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+        <!-- 应用info日志 -->
+        <RollingRandomAccessFile name="INFO_APPENDER" fileName="${baseLogDir}/info.log"
+                                 filePattern="${baseLogDir}/$${date:yyyy-MM}/info-%d{yyyy-MM-dd}.%i.gz">
+            <PatternLayout>
+                <Pattern>${pattern}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="500MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <Filters>
+                <!-- 当前appender只打印info日志，warn及以上日志忽略，由后面的appender决定是否需要打印 -->
+                <ThresholdFilter level="WARN" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <!-- 最多产生30个日志文件 -->
+            <DefaultRolloverStrategy max="30">
+                <!-- 对于指定的路径下的指定后缀的文件，只保留30天的日志文件 -->
+                <Delete basePath="${baseLogDir}" maxDepth="1">
+                    <IfFileName glob="*.gz"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+        <!-- 应用WARN日志 -->
+        <RollingRandomAccessFile name="WARN_APPENDER" fileName="${baseLogDir}/warn.log"
+                                 filePattern="${baseLogDir}/$${date:yyyy-MM}/warn-%d{yyyy-MM-dd}.%i.gz">
+            <PatternLayout>
+                <Pattern>${pattern}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="500MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <Filters>
+                <!-- 当前appender只打印warn日志，error及以上日志忽略，由后面的appender决定是否需要打印 -->
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <!-- 最多产生30个日志文件 -->
+            <DefaultRolloverStrategy max="30">
+                <!-- 对于指定的路径下的指定后缀的文件，只保留30天的日志文件 -->
+                <Delete basePath="${baseLogDir}" maxDepth="1">
+                    <IfFileName glob="*.gz"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+        <!-- 应用错误日志 -->
+        <RollingRandomAccessFile name="ERROR_APPENDER" fileName="${baseLogDir}/error.log"
+                                 filePattern="${baseLogDir}/$${date:yyyy-MM}/error-%d{yyyy-MM-dd}.%i.gz">
+            <PatternLayout>
+                <Pattern>${pattern}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="500MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <!-- 最多产生30个日志文件 -->
+            <DefaultRolloverStrategy max="30">
+                <!-- 对于指定的路径下的指定后缀的文件，只保留30天的日志文件 -->
+                <Delete basePath="${baseLogDir}" maxDepth="1">
+                    <IfFileName glob="*.gz"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- root是公共的默认logger，供记录一些不常打印的系统参数或者其他组件参数 -->
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="SYS_APPENDER"/>
+        </Root>
+        <!-- 常打印的应用日志，独立配置并采用异步模式。name根据实际的包名修改，生产环境中additivity建议设置为false可避免在root logger中重复打印 -->
+        <AsyncLogger name="com" level="INFO" includeLocation="false" additivity="true">
+            <AppenderRef ref="INFO_APPENDER"/>
+            <AppenderRef ref="WARN_APPENDER"/>
+            <AppenderRef ref="ERROR_APPENDER"/>
+        </AsyncLogger>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--客户端依赖配置 begin-->
+    <bean id="ctfApiClient" class="com.bj58.ctf2021.privatefilesystem.common.utils.client.ctf.impl.CtfApiClientImpl">
+        <constructor-arg name="restTemplateBuilder" ref="restTemplateBuilder"/>
+        <property name="apiDomain" value="${api.client.ctf.domain}"/>
+        <property name="connectTimeout" value="${api.client.ctf.connect-timeout}"/>
+        <property name="readTimeout" value="${api.client.ctf.read-timeout}"/>
+    </bean>
+    <!--客户端依赖配置 end-->
+
+</beans>
