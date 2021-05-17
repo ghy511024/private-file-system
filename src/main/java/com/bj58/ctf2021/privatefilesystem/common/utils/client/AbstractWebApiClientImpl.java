@@ -62,8 +62,8 @@ public abstract class AbstractWebApiClientImpl {
     @Bean
     public HttpComponentsClientHttpRequestFactory requestFactory() {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(30, TimeUnit.SECONDS);
-        connectionManager.setMaxTotal(200);
-        connectionManager.setDefaultMaxPerRoute(20);
+        connectionManager.setMaxTotal(500);
+        connectionManager.setDefaultMaxPerRoute(400);
         CloseableHttpClient httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .evictIdleConnections(30, TimeUnit.SECONDS)
